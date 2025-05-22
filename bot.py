@@ -22,9 +22,7 @@ def send_prono_for_hour(context: CallbackContext, target_hour: str):
         response = requests.get(CSV_URL)
         lines = response.text.splitlines()
         reader = csv.DictReader(lines)
-
         today = datetime.datetime.now().strftime("%Y-%m-%d")
-
         for row in reader:
             if row["Heure"] == target_hour and row["Date"] == today:
                 message = row["Message"]
@@ -42,9 +40,50 @@ def send_12h(context: CallbackContext):
 def send_20h(context: CallbackContext):
     send_prono_for_hour(context, "20h")
 
+def send_bilan(context: CallbackContext):
+    try:
+        response = requests.get(CSV_URL)
+        lines = response.text.splitlines()
+        reader = csv.DictReader(lines)
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+
+        validés = 0
+        refusés = 0
+        total_gain = 0
+        total_misé = 0
+
+        for row in reader:
+            if row["Date"] == today:
+                statut = row.get("Statut", "").strip().upper()
+                cote = float(row["Cote"])
+                if statut.startswith("VALIDÉ"):
+                    validés += 1
+                    total_gain += 5 * cote
+                    total_misé += 5
+                elif statut.startswith("REFUSÉ"):
+                    refusés += 1
+                    total_misé += 5
+
+        if total_misé == 0:
+            rentabilité = 0
+        else:
+            rentabilité = ((total_gain - total_misé) / total_misé) * 100
+
+        bilan_message = f"📊 BILAN PRONOZONE – {today}\n"
+        bilan_message += f"✅ VALIDÉS : {validés}\n"
+        bilan_message += f"❌ REFUSÉS : {refusés}\n\n"
+        bilan_message += f"📈 Rentabilité : {rentabilité:.2f}%\n"
+        bilan_message += "Discipline & efficacité. On revient demain 🔥"
+
+        bot.send_message(chat_id=CHANNEL_ID, text=bilan_message)
+    except Exception as e:
+        print("Erreur lors de l'envoi du bilan :", e)
+
+# Planification des messages
 job_queue.run_daily(send_9h, time=datetime.time(hour=9, minute=0))
 job_queue.run_daily(send_12h, time=datetime.time(hour=12, minute=0))
 job_queue.run_daily(send_20h, time=datetime.time(hour=20, minute=0))
+job_queue.run_daily(send_bilan, time=datetime.time(hour=21, minute=30))
 
 # Fausse appli web pour Render
 app = Flask(__name__)
