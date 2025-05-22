@@ -1,31 +1,50 @@
+
 import os
 import datetime
 import time
+import requests
+import csv
 from flask import Flask
 from threading import Thread
 from telegram import Bot
 from telegram.ext import Updater, CallbackContext
 
-# Récupère les variables Render
 TOKEN = os.getenv("TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
+CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSIj6Rl6MpN_R3MLEcMLinq-3G10mJ_WqofqthKuGh8XKYBgQuCmM-bfWU54qhc_BNsSqgx8J-qs6V1/pub?output=csv"
 
 bot = Bot(token=TOKEN)
 updater = Updater(token=TOKEN)
 job_queue = updater.job_queue
 
-# Envoie des pronos chaque jour à 9h
-def send_pronos(context: CallbackContext):
-    date = datetime.datetime.now().strftime("%d/%m/%Y")
-    pronos = [
-        "1️⃣ Napoli gagne & +2,5 buts (1.57)",
-        "2️⃣ Inter gagne & les 2 équipes marquent (2.75)",
-        "3️⃣ BTTS Betis vs Valencia (1.80)"
-    ]
-    message = f"📅 {date}\n\n📊 PRONOSTICS DU JOUR\n\n" + "\n".join(pronos) + "\n\nBonne chance la zone !"
-    bot.send_message(chat_id=CHANNEL_ID, text=message)
+def send_prono_for_hour(context: CallbackContext, target_hour: str):
+    try:
+        response = requests.get(CSV_URL)
+        lines = response.text.splitlines()
+        reader = csv.DictReader(lines)
 
-job_queue.run_daily(send_pronos, time=datetime.time(hour=9, minute=0))
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+
+        for row in reader:
+            if row["Heure"] == target_hour and row["Date"] == today:
+                message = row["Message"]
+                bot.send_message(chat_id=CHANNEL_ID, text=message)
+                break
+    except Exception as e:
+        print(f"Erreur lors de l'envoi du prono ({target_hour}) :", e)
+
+def send_9h(context: CallbackContext):
+    send_prono_for_hour(context, "9h")
+
+def send_12h(context: CallbackContext):
+    send_prono_for_hour(context, "12h")
+
+def send_20h(context: CallbackContext):
+    send_prono_for_hour(context, "20h")
+
+job_queue.run_daily(send_9h, time=datetime.time(hour=9, minute=0))
+job_queue.run_daily(send_12h, time=datetime.time(hour=12, minute=0))
+job_queue.run_daily(send_20h, time=datetime.time(hour=20, minute=0))
 
 # Fausse appli web pour Render
 app = Flask(__name__)
@@ -34,7 +53,6 @@ app = Flask(__name__)
 def index():
     return "Bot is running."
 
-# Lancer Flask dans un thread séparé
 def run():
     app.run(host="0.0.0.0", port=10000)
 
@@ -42,12 +60,6 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
-# Lancer le faux serveur et le bot
 keep_alive()
 updater.start_polling()
 updater.idle()
-
-import time
-while True:
-    time.sleep(60)
-
