@@ -6,8 +6,8 @@ import requests
 import csv
 from flask import Flask
 from threading import Thread
-from telegram import Bot
-from telegram.ext import Updater, CallbackContext
+from telegram import Bot, Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
 
 TOKEN = os.getenv("TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
@@ -15,6 +15,7 @@ CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSIj6Rl6MpN_R3MLEcMLi
 
 bot = Bot(token=TOKEN)
 updater = Updater(token=TOKEN)
+dispatcher = updater.dispatcher
 job_queue = updater.job_queue
 
 def send_prono_for_hour(context: CallbackContext, target_hour: str):
@@ -40,7 +41,7 @@ def send_12h(context: CallbackContext):
 def send_20h(context: CallbackContext):
     send_prono_for_hour(context, "20h")
 
-def send_bilan(context: CallbackContext):
+def get_bilan_text():
     try:
         response = requests.get(CSV_URL)
         lines = response.text.splitlines()
@@ -75,9 +76,21 @@ def send_bilan(context: CallbackContext):
         bilan_message += f"📈 Rentabilité : {rentabilité:.2f}%\n"
         bilan_message += "Discipline & efficacité. On revient demain 🔥"
 
-        bot.send_message(chat_id=CHANNEL_ID, text=bilan_message)
+        return bilan_message
     except Exception as e:
-        print("Erreur lors de l'envoi du bilan :", e)
+        print("Erreur lors du calcul du bilan :", e)
+        return "❌ Une erreur est survenue lors du calcul du bilan."
+
+def bilan_command(update: Update, context: CallbackContext):
+    bilan = get_bilan_text()
+    update.message.reply_text(bilan)
+
+def send_bilan(context: CallbackContext):
+    bilan = get_bilan_text()
+    bot.send_message(chat_id=CHANNEL_ID, text=bilan)
+
+# Ajout du handler de commande /bilan
+dispatcher.add_handler(CommandHandler("bilan", bilan_command))
 
 # Planification des messages
 job_queue.run_daily(send_9h, time=datetime.time(hour=9, minute=0))
