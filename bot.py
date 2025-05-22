@@ -24,3 +24,8 @@ job_queue.run_daily(send_pronos, time=datetime.time(hour=9, minute=0))  # Envoi 
 
 updater.start_polling()
 updater.idle()
+
+import time
+while True:
+    time.sleep(60)
+
