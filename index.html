@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PRONObot</title>
+    <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* styles.css (Votre CSS personnalisé fourni) */ 
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap'); 
+
+        :root { 
+            --gradient-start: #2c0f3b; 
+            --gradient-mid: #1a1a2e;    
+            --gradient-end: #0d0d1f;      
+            --gradient-start-rgb: 44, 15, 59;
+            --gradient-mid-rgb: 26, 26, 46;
+            --gradient-end-rgb: 13, 13, 31;
+
+            --text-light: #f0f0f8;      
+            --text-medium: #a0a0c0;    
+            --text-dark: #707090;      
+            
+            --card-bg: rgba(30, 24, 43, 0.75); 
+            --card-bg-rgb: 30, 24, 43; 
+            --card-bg-opaque: #1e182b;  
+
+            --border-color: rgba(191, 64, 191, 0.3);  
+            --primary-purple: #BF40BF;  
+            --primary-purple-rgb: 191, 64, 191;  
+            --primary-purple-darker: #9F309F;  
+
+            --success-color: #39FF14;   
+            --danger-color: #FF3131;    
+            --danger-color-rgb: 255, 49, 49;
+            --warning-color: #FFD700;   
+
+            --font-main: 'Montserrat', sans-serif; 
+            --font-titles: 'Montserrat', sans-serif; 
+
+            --shadow-light: 0 4px 15px rgba(0,0,0, 0.15);  
+            --shadow-strong: 0 6px 20px rgba(0,0,0, 0.25); 
+            
+            --pronocoin-image-url: url("{{ url_for('static', filename='pronocoin_icon.png') }}");
+        } 
+
+        * { box-sizing: border-box; margin: 0; padding: 0; } 
+        html { scroll-behavior: smooth; } 
+        body { 
+            font-family: var(--font-main); 
+            margin: 0; 
+            padding-top: 60px; 
+            padding-bottom: 75px;  
+            background-image: url("{{ url_for('static', filename='background_pronozone.png') }}"); 
+            background-size: cover; background-position: center; 
+            background-repeat: no-repeat; background-attachment: fixed; 
+            color: var(--text-light); 
+            overscroll-behavior-y: contain; 
+            -webkit-font-smoothing: antialiased; 
+            -moz-osx-font-smoothing: grayscale; 
+            min-height: 100vh;
+            display: flex; 
+            flex-direction: column; 
+        } 
+        body::before { 
+            content: ""; position: fixed; 
+            top: 0; left: 0; width: 100vw; height: 100vh; 
+            background: linear-gradient(135deg,  
+                rgba(var(--gradient-start-rgb), 0.92),  
+                rgba(var(--gradient-mid-rgb), 0.96),   
+                rgba(var(--gradient-end-rgb), 0.99)    
+            ); 
+            z-index: -1;  
+        } 
+        .app-shell { 
+            width: 100%;
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: transparent; 
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; 
+            overflow: hidden; 
+        }
+        .app-main-content { 
+            flex-grow: 1;
+            overflow-y: auto; 
+            padding: 15px;
+        }
+
+        .app-header {
+            background-color: rgba(var(--gradient-mid-rgb), 0.8); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 0 15px; 
+            height: 60px; 
+            display: flex; justify-content: space-between; align-items: center;
+            position: fixed; 
+            top: 0; left: 0; right: 0;
+            width: 100%;
+            max-width: 600px; 
+            margin: 0 auto; 
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .app-header .logo-container { 
+            flex-basis: 20%; 
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .app-header .logo-img {
+            height: 38px; 
+            width: 38px; 
+            border-radius: 8px; 
+        }
+        .app-header .page-title-container { 
+            flex-grow: 1;
+            text-align: center;
+        }
+        .app-header .current-page-title {
+            font-family: var(--font-titles);
+            font-size: 1.1em; 
+            font-weight: 700;
+            color: var(--text-light);
+        }
+        .app-header .header-spacer-right { 
+            flex-basis: 20%;
+        }
+        
+        .content-section .section-subtitle { 
+            text-align: left; font-size: 1em; 
+            font-weight: 500; color: var(--text-medium); 
+            margin-top: 0; 
+            margin-bottom: 10px; 
+        } 
+
+        .card { 
+            background-color: var(--card-bg); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); 
+            border-radius: 12px; padding: 15px; 
+            margin-bottom: 15px; box-shadow: none; 
+            border: 1px solid rgba(var(--primary-purple-rgb), 0.1); 
+        } 
+        
+        .accueil-balance-prominent {
+            text-align: center;
+            padding: 25px 15px; 
+            margin-bottom: 20px;
+            background-color: var(--card-bg-opaque); 
+            border-radius: 12px; 
+        }
+        .accueil-balance-prominent .balance-amount {
+            font-size: 3em; 
+            font-weight: 900; 
+            color: var(--primary-purple);
+            line-height: 1;
+        }
+        .accueil-balance-prominent .balance-currency {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: var(--text-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px; 
+            display: block;
+        }
+        .accueil-balance-prominent .pronocoin-icon { 
+            width: 32px; height: 32px; 
+            vertical-align: -7px; 
+            margin-left: 7px;
+        }
+
+
+        .info-box { 
+            background-color: var(--card-bg-opaque); padding: 15px; 
+            border-radius: 12px; text-align: center; margin-bottom: 20px; 
+        } 
+        .info-box .value { font-size: 1.8em; font-weight: 700; color: var(--primary-purple); margin-bottom: 2px; } 
+        .info-box .label { font-size: 0.8em; color: var(--text-medium); text-transform: uppercase; letter-spacing: 0.5px;} 
+
+        .matches-grid { display: grid; grid-template-columns: 1fr; gap: 15px; } 
+        
+        .match-card .teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 1em; font-weight: 700;} 
+        .match-card .team-name { text-align: left; color: var(--text-light); flex: 1; } 
+        .match-card .team-name:last-child { text-align: right; }
+        .match-card .vs { color: var(--text-dark); font-size: 0.9em; margin: 0 8px; font-weight: 500; } 
+        .match-card .match-datetime { font-size: 0.75em; color: var(--text-medium); margin-bottom: 10px; }
+        .odds-section { display: flex; justify-content: space-between; align-items: center; background-color: rgba(var(--primary-purple-rgb), 0.1); padding: 8px 10px; border-radius: 8px; margin: 10px 0; } 
+        .bet-suggestion { font-weight: 500; color: var(--primary-purple); font-size: 0.9em; } 
+        .odds-value { font-weight: 700; color: var(--text-light); font-size: 0.9em; } 
+        .details-grid { display: flex; justify-content: space-around; font-size: 0.75em; color: var(--text-medium); margin-top: 10px; text-align: center; } 
+        .details-grid div { padding: 5px 0; } 
+        .details-grid strong { color: var(--text-light); display: block; margin-bottom: 2px; font-size: 0.9em; font-weight: 500;} 
+
+        .bottom-nav { 
+            position: fixed; bottom: 0; left: 0; right: 0;
+            width: 100%; max-width: 600px; 
+            margin: 0 auto; 
+            height: 75px; 
+            background-color: rgba(var(--gradient-mid-rgb), 0.85);  
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);  
+            display: flex; justify-content: space-around; align-items: center; 
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.3);  
+            z-index: 1000; border-top: 0.5px solid var(--border-color); 
+        } 
+        .nav-item { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;  
+            cursor: pointer; color: var(--text-dark); 
+            border: none; background: none; 
+            padding: 5px; transition: color 0.2s ease, transform 0.2s ease; 
+            flex-grow: 1; text-align: center; 
+            height: 100%; 
+        } 
+        .nav-item .icon-img {  
+            width: 26px; height: 26px; 
+            margin-bottom: 3px;  
+            object-fit: contain; 
+            opacity: 0.7;
+        } 
+        .nav-item .fallback-icon { 
+            font-size: 26px; 
+            line-height: 26px;
+            margin-bottom: 3px;
+            opacity: 0.7;
+        }
+        .nav-item.active .icon-img, .nav-item.active .fallback-icon { opacity: 1; transform: scale(1.05); } 
+        .nav-item .nav-text {  
+            font-size: 10px; 
+            font-weight: 500; 
+            letter-spacing: 0.2px; 
+        } 
+        .nav-item:hover { color: var(--primary-purple); } 
+        .nav-item.active { color: var(--primary-purple); } 
+        .nav-item.active .nav-text { font-weight: 700; } 
+
+        .tab-navigation { 
+            display: flex; justify-content: center; margin-bottom: 20px; 
+            background-color: rgba(var(--card-bg-rgb), 0.5); 
+            border-radius: 8px; padding: 4px;
+        } 
+        .tab-button { 
+            flex-grow: 1; text-align: center;
+            padding: 8px 10px; cursor: pointer; background: none; border: none; 
+            color: var(--text-medium); font-family: var(--font-main); 
+            font-weight: 500; font-size: 0.9em; 
+            border-radius: 6px; 
+            transition: background-color 0.2s ease, color 0.2s ease; 
+        } 
+        .tab-button:hover { color: var(--text-light); } 
+        .tab-button.active { 
+            color: var(--text-light); 
+            background-color: var(--primary-purple); 
+            font-weight: 700;
+        } 
+        .tab-content { display: none; } 
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; } 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } } 
+
+        .pronocoin-icon {  
+            display: inline-block; width: 18px; height: 18px; 
+            background-image: var(--pronocoin-image-url);  
+            background-size: contain; background-repeat: no-repeat;  
+            background-position: center;
+            vertical-align: -3px; 
+            margin-left: 3px; margin-right: 1px; 
+        } 
+        .pronocoin-icon-header { 
+            width: 22px; height: 22px; 
+            background-image: var(--pronocoin-image-url);
+            background-size: contain; background-repeat: no-repeat;
+            background-position: center;
+        }
+        .bet-button .pronocoin-icon {
+             /* filter: brightness(0) invert(1); */ /* Si votre icône est déjà claire, commentez/supprimez. Si sombre, décommentez. */
+        }
+        .tutorial-modal-content .pronocoin-inline-logo { 
+            width: 22px; height: 22px; vertical-align: -4px; margin: 0 2px; 
+            background-image: var(--pronocoin-image-url); 
+            background-size:contain; background-repeat:no-repeat; display:inline-block;
+        }
+
+
+        .task-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background-color: transparent; 
+            padding: 12px 0; 
+            margin-bottom: 0; 
+            border-bottom: 1px solid rgba(var(--border-color), 0.5); 
+        } 
+        .task-item:last-child { border-bottom: none; }
+        .task-item .task-description { color: var(--text-light); font-size: 0.9em; font-weight: 500;} 
+        .task-item .task-reward { font-weight: 700; color: var(--success-color); display: flex; align-items: center; font-size: 0.9em;} 
+        .task-item .task-reward .pronocoin-icon { margin-left: 5px; } 
+        .task-item .claim-task-btn { padding: 6px 10px; font-size: 0.8em; letter-spacing: 0.3px; } 
+        .task-item .task-completed { color: var(--success-color); font-style: normal; font-size: 0.9em; font-weight: 500;} 
+        
+        .profile-header {display: flex; flex-direction: column; align-items: center; margin-bottom: 20px;} 
+        .profile-picture {width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid var(--primary-purple); background-color: var(--card-bg);} 
+        .profile-name {font-size: 1.3em; font-weight: 700; color: var(--text-light); margin-bottom: 3px;} 
+        .profile-username-id {font-size: 0.85em; color: var(--text-medium);} 
+        .account-item { margin-bottom: 10px; font-size: 0.95em; display: flex; justify-content: space-between;} 
+        .account-item strong { color: var(--text-medium); font-weight: 500;} 
+        .account-item .value { color: var(--text-light); font-weight: 700; } 
+        .xp-progress-container { width:100%; background-color: rgba(var(--primary-purple-rgb),0.1); border-radius: 5px; height: 8px; margin-top:3px; overflow: hidden;}
+        #xpProgressBar { background-color: var(--primary-purple); height: 100%; border-radius: 5px; transition: width 0.5s ease;}
+
+        .profile-pseudo-section label {display: block; font-size: 0.85em; color: var(--text-medium); margin-bottom: 5px; font-weight: 500;} 
+        .profile-pseudo-section input[type="text"] {
+            width: 100%; padding: 12px; border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            background-color: rgba(var(--card-bg-rgb),0.5); 
+            color: var(--text-light); font-family: var(--font-main); font-size: 1em;
+            margin-bottom: 10px;
+        } 
+        #pseudo-message {text-align:center; margin-top:8px; font-size:0.85em; min-height: 1.1em;} 
+
+        .leaderboard-list { list-style: none; padding: 0; } 
+        .leaderboard-item {
+            display: flex; align-items: center; padding: 10px 0; 
+            margin-bottom: 0; background-color: transparent; 
+            border-bottom: 1px solid rgba(var(--border-color), 0.5);
+            transition: background-color 0.2s ease-out;
+        } 
+        .leaderboard-item:last-child { border-bottom: none; }
+        .leaderboard-item:hover { background-color: rgba(var(--primary-purple-rgb),0.05); }
+        .leaderboard-item .rank {font-size: 1em; font-weight: 700; color: var(--primary-purple); margin-right: 12px; min-width: 20px; text-align: center;} 
+        .leaderboard-item .profile-pic-small {width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; background-color: var(--card-bg);} 
+        .leaderboard-item .user-info {flex-grow: 1;} 
+        .leaderboard-item .user-info .pseudo {font-weight: 500; color: var(--text-light); font-size: 1em; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;} 
+        .leaderboard-item .user-info .join-date {font-size: 0.75em; color: var(--text-dark);} 
+        .leaderboard-item .stats {text-align: right; min-width: 80px;} 
+        .leaderboard-item .stats .balance {font-size: 1em; font-weight: 700; color: var(--success-color); margin-bottom: 2px;} 
+        .leaderboard-item .stats .balance.negative {color: var(--danger-color);} 
+        .leaderboard-item .stats .xp-level {font-size: 0.8em; color: var(--text-medium);} 
+        
+        .match-card.locked-prono .bet-suggestion, 
+        .match-card.locked-prono .odds-value { 
+            filter: blur(4px); color: var(--text-dark) !important; cursor: default; 
+        } 
+        .match-card.locked-prono .bet-button:not(.unlock-prono-btn) { display: none; } 
+        .unlock-prono-btn { background-color: var(--primary-purple) !important; color: white !important; } 
+
+        .custom-modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(0,0,0,0.6); display: none;  
+            justify-content: center; align-items: center; z-index: 4000; padding: 20px; 
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); 
+        } 
+        .custom-modal-dialog { 
+            background-color: var(--card-bg-opaque); padding: 20px 25px; border-radius: 14px; 
+            width: 100%; max-width: 320px; 
+            border: 0.5px solid rgba(var(--border-color),0.7); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; 
+            animation: fadeInModal 0.2s ease-out; 
+        } 
+        .custom-modal-dialog h3 { color: var(--text-light); margin-top: 0; margin-bottom: 8px; font-size: 1.1em; font-weight: 700;} 
+        .custom-modal-dialog p { margin-bottom: 20px; color: var(--text-medium); line-height: 1.5; font-size: 0.9em;} 
+        .custom-modal-actions-dialog { display: flex; flex-direction: column; gap: 10px; } 
+        .custom-modal-actions-dialog .bet-button {  
+            width: 100%; font-size: 1em; padding: 12px; 
+        } 
+        .custom-modal-actions-dialog .bet-button.confirm-button { background-color: var(--primary-purple); }
+        .custom-modal-actions-dialog .bet-button.cancel-button { background-color: rgba(var(--text-dark), 0.5); color: var(--text-light); } 
+        .custom-modal-actions-dialog .bet-button.cancel-button:hover { background-color: var(--text-dark); } 
+
+        .tutorial-modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(0,0,0,0.7); display: none; 
+            justify-content: center; align-items: center; z-index: 5000; padding: 20px; 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); 
+        } 
+        .tutorial-modal-content { 
+            background-color: var(--card-bg-opaque); padding: 25px; border-radius: 14px; 
+            width: 100%; max-width: 360px; border: 0.5px solid var(--border-color); 
+            box-shadow: 0 10px 30px rgba(var(--primary-purple-rgb), 0.3); 
+            text-align: center; animation: fadeInModal 0.3s ease-out; 
+        } 
+        .tutorial-modal-content h2 { color: var(--primary-purple); margin-top: 0; margin-bottom: 15px; font-size: 1.4em; font-weight: 700;} 
+        .tutorial-modal-content p { margin-bottom: 15px; color: var(--text-light); line-height: 1.6; font-size: 1em;} 
+        .tutorial-modal-content .pronocoin-inline-logo { 
+            /* Utilise la classe .pronocoin-icon */
+        } 
+        .tutorial-modal-content .highlight { color: var(--primary-purple); font-weight: 700; } 
+        .tutorial-modal-actions { margin-top: 25px; display: flex; flex-direction: column; gap: 10px;} 
+        .tutorial-modal-actions .bet-button { width: 100%; font-size: 1em; padding: 12px;}
+
+        .bet-button { 
+            font-family: var(--font-main); font-weight: 500; 
+            padding: 12px 20px; 
+            border-radius: 8px; border: none; cursor: pointer; 
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease; 
+            text-transform: none; 
+            letter-spacing: 0.3px; 
+            background-color: var(--primary-purple); color: white; 
+            box-shadow: none; 
+            font-size: 1em; 
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+        } 
+        .bet-button:hover { background-color: var(--primary-purple-darker); } 
+        .bet-button:active { transform: scale(0.98); } 
+        .bet-button.cancel-button { background-color: rgba(var(--text-dark), 0.7); } 
+        .bet-button.cancel-button:hover { background-color: var(--text-dark); } 
+        .bet-button:disabled { background-color: var(--text-dark); color: var(--text-medium); cursor: not-allowed; opacity: 0.6; } 
+
+        .loading { text-align: center; padding: 20px; color: var(--text-medium); font-style: italic; font-size: 0.9em;} 
+        .error-message { 
+            color: var(--danger-color); text-align: center; padding: 10px; 
+            background-color: rgba(var(--danger-color-rgb), 0.1); 
+            border: 1px solid var(--danger-color); border-radius: 8px; font-size: 0.9em;
+        } 
+        .tag { 
+            display: inline-block; padding: 4px 8px; 
+            border-radius: 6px; font-size: 0.75em; 
+            font-weight: 700; 
+            text-transform: uppercase; margin-right: 5px; 
+            background-color: rgba(var(--primary-purple-rgb), 0.15); 
+            color: var(--primary-purple); 
+            border: 1px solid transparent; 
+        } 
+        .tag.risque-faible { background-color: rgba(57, 255, 20, 0.2); color: var(--success-color); } 
+        .tag.risque-moyen { background-color: rgba(255, 215, 0, 0.2); color: var(--warning-color); } 
+        .tag.risque-eleve, .tag.risque-haut { background-color: rgba(255, 49, 49, 0.2); color: var(--danger-color); } 
+
+        .tag.statut-gagne, .tag.statut-gagné { background-color: rgba(57, 255, 20, 0.2); color: var(--success-color); } 
+        .tag.statut-perdu { background-color: rgba(255, 49, 49, 0.2); color: var(--danger-color); } 
+        .tag.statut-a-venir, .tag.statut-à-venir { background-color: rgba(255, 215, 0, 0.2); color: var(--warning-color); } 
+        .tag.statut-annule, .tag.statut-annulé { background-color: rgba(128, 128, 128, 0.2); color: var(--text-medium); } 
+        .tag.statut-rembourse, .tag.statut-remboursé { background-color: rgba(100, 100, 200, 0.2); color: #87CEFA; } 
+
+        input[type="text"], input[type="date"] {
+            background-color: rgba(var(--card-bg-rgb), 0.5); 
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            padding: 12px 15px; 
+            border-radius: 8px; 
+            font-size: 1em; 
+            width: 100%; 
+        }
+        input[type="text"]::placeholder { color: var(--text-dark); }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(70%) sepia(50%) saturate(5000%) hue-rotate(250deg) brightness(100%); 
+        }
+        .hidden-page { display: none !important; }
+        .placeholder-text { color: var(--text-dark); text-align: center; padding: 20px 0; font-style: italic; font-size: 0.9em;}
+
+        #appLoadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--gradient-end); 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        #appLoadingOverlay img {
+            width: 80px; 
+            height: 80px;
+            animation: pulseLogo 1.5s infinite ease-in-out;
+        }
+        #appLoadingOverlay p {
+            margin-top: 15px;
+            color: var(--primary-purple);
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        @keyframes pulseLogo {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        /* Chart container styling */
+        .chart-container-wrapper {
+            position: relative;
+            height: 300px; 
+            width: 100%;
+            max-width: 550px; 
+            margin: 20px auto 0 auto; 
+        }
+        @media (max-width: 600px) {
+            .chart-container-wrapper {
+                height: 250px; 
+            }
+        }
+    </style>
+</head>
+<body> 
+    <div id="appLoadingOverlay">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Chargement PRONObot..."
+             onerror="this.style.display='none'; this.nextElementSibling.textContent = 'Chargement PRONObot...';">
+        <p>Chargement...</p>
+    </div>
+
+    <div class="app-shell" style="visibility: hidden;"> 
+        <header class="app-header">
+            <div class="logo-container">
+                 <img src="{{ url_for('static', filename='logo.png') }}" alt="PRONObot Logo" 
+                     onerror="this.onerror=null; this.src='https://placehold.co/38x38/1e182b/f0f0f8?text=PB&font=montserrat';"
+                     class="logo-img">
+            </div>
+            <div class="page-title-container">
+                <span id="currentPageTitle" class="current-page-title">Accueil</span>
+            </div>
+            <div class="header-spacer-right">
+                </div>
+        </header>
+
+        <main class="app-main-content">
+            <section id="accueil-section" class="content-section current-page">
+                </section>
+
+            <section id="pronos-section" class="content-section hidden-page">
+                </section>
+
+            <section id="activite-section" class="content-section hidden-page">
+                </section>
+
+            <section id="profil-section" class="content-section hidden-page">
+                </section>
+        </main>
+
+        <nav class="bottom-nav">
+             <button data-page="accueil-section" class="nav-item active">
+                <img src="{{ url_for('static', filename='icon_accueil.png') }}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                     alt="Accueil" class="icon-img">
+                <span class="fallback-icon" style="display:none;">🏠</span>
+                <span class="nav-text">Accueil</span>
+            </button>
+            <button data-page="pronos-section" class="nav-item">
+                <img src="{{ url_for('static', filename='icon_pronos_perso.png') }}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                     alt="Pronos" class="icon-img">
+                <span class="fallback-icon" style="display:none;">🏆</span>
+                <span class="nav-text">Pronos</span>
+            </button>
+            <button data-page="activite-section" class="nav-item">
+                <img src="{{ url_for('static', filename='icon_activite.png') }}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                     alt="Activité" class="icon-img">
+                <span class="fallback-icon" style="display:none;">📊</span>
+                <span class="nav-text">Activité</span>
+            </button>
+            <button data-page="profil-section" class="nav-item">
+                <img src="{{ url_for('static', filename='icon_profil_global.png') }}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                     alt="Profil" class="icon-img">
+                <span class="fallback-icon" style="display:none;">👤</span>
+                <span class="nav-text">Profil</span>
+            </button>
+        </nav>
+    </div> 
+
+    <div id="customModalOverlay" class="custom-modal-overlay">
+        <div class="custom-modal-dialog">
+            <h3 id="customModalTitle">Titre du Modal</h3>
+            <p id="customModalMessage">Message du modal.</p>
+            <div id="customModalActions" class="custom-modal-actions-dialog">
+                <button id="customModalConfirmBtn" class="bet-button confirm-button">Confirmer</button>
+                <button id="customModalCancelBtn" class="bet-button cancel-button">Annuler</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="tutorialModalOverlay" class="tutorial-modal-overlay">
+        <div class="tutorial-modal-content">
+            <h2 id="tutorialModalTitle">Bienvenue sur PRONObot !</h2>
+            <div id="tutorialModalStepContent"><p>Chargement du tutoriel...</p></div>
+            <div class="tutorial-modal-actions">
+                <button id="tutorialPrevBtn" class="bet-button cancel-button" style="display: none;">Précédent</button>
+                <button id="tutorialNextBtn" class="bet-button">Suivant</button>
+                <button id="tutorialEndBtn" class="bet-button" style="display: none;">Terminer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Variables Globales & Constantes ---
+        let currentUserId = null; 
+        let currentUserData = null; 
+        const TG_WEB_APP = window.Telegram?.WebApp;
+        const API_BASE_URL = ''; 
+        const PRONOCOINS_UNLOCK_COST = 10; 
+        const PRONOCOINS_BET_COST = 10;    
+
+        const LEVELS_XP = [0, 100, 250, 500, 1000, 2000, 5000, 10000]; 
+        const TASKS_CONFIG_FRONTEND = { 
+            'tutorial': {name: 'Terminer le tutoriel', pc_reward: 1, xp_reward: 5, claimed_field: 'tutorial_completed_reward_claimed'},
+            'google': {name: 'Lier son compte Google', pc_reward: 5, xp_reward: 10, claimed_field: 'google_linked_reward_claimed'},
+            'pseudo': {name: 'Créer son pseudo', pc_reward: 2, xp_reward: 5, claimed_field: 'pseudo_created_reward_claimed'},
+            'three_bets': {name: 'Faire 3 paris ({COUNT}/3)', pc_reward: 10, xp_reward: 15, claimed_field: 'three_bets_reward_claimed', condition_bet_count: 3},
+            'tiktok': {name: 'Suivre sur TikTok', pc_reward: 3, xp_reward: 5, claimed_field: 'tiktok_follow_reward_claimed', link: 'https://tiktok.com/@VotreCompte'}, 
+            'x': {name: 'Suivre sur X', pc_reward: 3, xp_reward: 5, claimed_field: 'x_follow_reward_claimed', link: 'https://x.com/VotreCompte'}, 
+            'instagram': {name: 'Suivre sur Instagram', pc_reward: 3, xp_reward: 5, claimed_field: 'instagram_follow_reward_claimed', link: 'https://instagram.com/VotreCompte'}, 
+            'tg_channel': {name: 'Rejoindre le Canal', pc_reward: 3, xp_reward: 5, claimed_field: 'telegram_channel_reward_claimed', link: 'https://t.me/VotreCanal'}, 
+            'tg_chat': {name: 'Rejoindre le Chat', pc_reward: 3, xp_reward: 5, claimed_field: 'telegram_chat_reward_claimed', link: 'https://t.me/VotreGroupe'} 
+        };
+        const PAGE_TITLES = {
+            'accueil-section': 'Accueil',
+            'pronos-section': 'Pronostics',
+            'activite-section': 'Activité',
+            'profil-section': 'Profil'
+        };
+
+        // --- Fonctions Utilitaires ---
+        function getRiskTagClass(risk) {
+            if (!risk) return '';
+            const riskLower = risk.toLowerCase();
+            if (riskLower.includes('faible')) return 'risque-faible';
+            if (riskLower.includes('moyen')) return 'risque-moyen';
+            if (riskLower.includes('haut') || riskLower.includes('élevé')) return 'risque-eleve';
+            return '';
+        }
+
+        function formatDate(dateString) { 
+            if (!dateString) return '';
+            const dateObj = new Date(dateString); 
+            if (isNaN(dateObj.getTime())) { 
+                const parts = dateString.split('-'); 
+                 return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateString;
+            }
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0'); 
+            const year = dateObj.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+        
+        function showLoadingPlaceholder(containerSelector, message = 'Chargement...') {
+            const container = document.querySelector(containerSelector);
+            if (container) {
+                container.innerHTML = `<p class="loading placeholder-text">${message}</p>`;
+            }
+        }
+        function clearContainer(containerSelector) {
+            const container = document.querySelector(containerSelector);
+            if (container) container.innerHTML = '';
+        }
+
+
+        // --- Navigation SPA ---
+        const pages = document.querySelectorAll('.app-main-content > .content-section');
+        const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+        const mainContentArea = document.querySelector('.app-main-content');
+        const currentPageTitleEl = document.getElementById('currentPageTitle');
+
+
+        function showPage(pageId) {
+            pages.forEach(page => page.classList.add('hidden-page'));
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden-page');
+                if(currentPageTitleEl) currentPageTitleEl.textContent = PAGE_TITLES[pageId] || 'PRONObot';
+                loadPageContent(pageId);
+            }
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.page === pageId) item.classList.add('active');
+            });
+            if(mainContentArea) mainContentArea.scrollTop = 0; 
+        }
+        
+        async function loadPageContent(pageId) {
+            const sectionElement = document.getElementById(pageId);
+            if (!sectionElement) return;
+            
+            sectionElement.innerHTML = `<p class="loading placeholder-text">Chargement de ${PAGE_TITLES[pageId]}...</p>`;
+
+            if (pageId === 'accueil-section') await renderAccueilPage(sectionElement);
+            else if (pageId === 'pronos-section') await renderPronosPage(sectionElement);
+            else if (pageId === 'activite-section') await renderActivitePage(sectionElement);
+            else if (pageId === 'profil-section') await renderProfilPage(sectionElement);
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => showPage(e.currentTarget.dataset.page));
+        });
+        
+        document.addEventListener('click', function(event) {
+            const tabButton = event.target.closest('.tab-button');
+            if (tabButton) {
+                const targetTabId = tabButton.dataset.tabTarget; 
+                const tabContainer = tabButton.closest('.content-section').querySelector(targetTabId); 
+                
+                if (!tabContainer) return;
+
+                tabButton.closest('.tab-navigation').querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                tabButton.classList.add('active');
+
+                tabButton.closest('.content-section').querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active'); 
+                });
+                tabContainer.classList.add('active');
+            }
+        });
+
+        // --- API Interaction & UI Update ---
+        async function makeApiRequest(endpoint, method = 'GET', body = null) {
+            const options = { method };
+            if (body && (method === 'POST' || method === 'PUT')) {
+                options.headers = { 'Content-Type': 'application/json' };
+                options.body = JSON.stringify(body);
+            }
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                const responseData = await response.json();
+                if (!response.ok) {
+                    throw new Error(responseData.error || `Erreur HTTP ${response.status}`);
+                }
+                return responseData;
+            } catch (error) {
+                console.error(`Erreur API (${method} ${endpoint}):`, error);
+                showCustomModal("Erreur Réseau", error.message || "Un problème est survenu.", false);
+                throw error; 
+            }
+        }
+        
+        async function fetchUserProfile(userId) {
+            if (!userId) return null;
+            try {
+                let queryParams = `user_id=${userId}`;
+                if (TG_WEB_APP && TG_WEB_APP.initDataUnsafe && TG_WEB_APP.initDataUnsafe.user) {
+                    const tgUser = TG_WEB_APP.initDataUnsafe.user;
+                    if (tgUser.first_name) queryParams += `&tg_first_name=${encodeURIComponent(tgUser.first_name)}`;
+                    if (tgUser.last_name) queryParams += `&tg_last_name=${encodeURIComponent(tgUser.last_name)}`;
+                    if (tgUser.username) queryParams += `&tg_username=${encodeURIComponent(tgUser.username)}`;
+                }
+                const userData = await makeApiRequest(`/api/user_profile?${queryParams}`);
+                currentUserData = userData; 
+                return userData;
+            } catch (error) { return null; }
+        }
+        
+        // --- Page d'Accueil ---
+        async function renderAccueilPage(sectionElement) {
+            sectionElement.innerHTML = `
+                <div id="accueil-balance-prominent" class="accueil-balance-prominent card">
+                    <span class="balance-amount" id="accueilMainBalance">--</span>
+                    <span class="balance-currency">PRONOCOINS<span class="pronocoin-icon"></span></span>
+                </div>
+                <div id="user-profile-summary-accueil" class="card mb-4">
+                    <div class="account-item"><strong>Pseudo:</strong> <span id="userPseudoAccueil" class="value">Chargement...</span></div>
+                    <div class="account-item"><strong>XP:</strong> <span id="userXpAccueil" class="value">--</span></div>
+                    <div class="account-item"><strong>Niveau:</strong> <span id="userLevelAccueil" class="value">--</span></div>
+                </div>
+                <div class="tasks-section card">
+                    <h3 class="section-subtitle mt-0 mb-3">Missions & Récompenses</h3>
+                    <div id="dailyRewardContainer" class="mb-3">
+                        <button id="claimDailyRewardBtn" class="bet-button w-full text-sm py-2.5"> 
+                            Réclamer 5 <span class="pronocoin-icon"></span> Quotidiens
+                        </button>
+                        <p id="dailyRewardMessage" class="text-xs text-[var(--text-medium)] mt-1.5 text-center"></p>
+                    </div>
+                    <div id="adRewardContainer" class="mb-3">
+                        <button id="watchAdBtn" class="bet-button w-full text-sm py-2.5" style="background-color: var(--success-color); color: var(--gradient-end);">
+                            Regarder une pub (+1 <span class="pronocoin-icon"></span>)
+                        </button>
+                        <p id="adRewardMessage" class="text-xs text-[var(--text-medium)] mt-1.5 text-center"></p>
+                    </div>
+                    <div id="tasksList"><p class="loading placeholder-text">Chargement des tâches...</p></div>
+                </div>
+                <div class="card mt-4">
+                    <h3 class="section-subtitle mt-0 mb-3">Pronos Suivis</h3>
+                    <div id="pronosSuivisContainer"><p class="loading placeholder-text">Chargement...</p></div>
+                </div>`;
+            
+            document.getElementById('claimDailyRewardBtn')?.addEventListener('click', handleClaimDailyReward);
+            document.getElementById('watchAdBtn')?.addEventListener('click', handleWatchAd);
+
+
+            if (!currentUserData) await fetchUserProfile(currentUserId); 
+            if (!currentUserData) {
+                 showCustomModal("Erreur", "Données utilisateur non disponibles pour l'accueil.", false);
+                 sectionElement.innerHTML = `<p class="error-message">Erreur chargement données utilisateur.</p>`;
+                 return;
+            }
+            document.getElementById('accueilMainBalance').textContent = currentUserData.pronocoins_balance || 0;
+            document.getElementById('userPseudoAccueil').textContent = currentUserData.pseudo || 'N/A';
+            document.getElementById('userXpAccueil').textContent = currentUserData.xp || 0;
+            document.getElementById('userLevelAccueil').textContent = currentUserData.level || 1;
+
+            try {
+                const tasksData = await makeApiRequest(`/api/tasks_status?user_id=${currentUserId}`);
+                renderTasks(tasksData);
+            } catch (e) { document.getElementById('tasksList').innerHTML = "<p class='error-message'>Erreur chargement tâches.</p>"; }
+            
+            updateDailyRewardButtonUI(currentUserData);
+            updateAdRewardButtonUI(currentUserData);
+
+
+            try {
+                const pronosSuivisData = await makeApiRequest(`/api/pronos_suivis?user_id=${currentUserId}`);
+                renderPronosSuivis(pronosSuivisData);
+            } catch (e) { document.getElementById('pronosSuivisContainer').innerHTML = "<p class='error-message'>Erreur chargement suivis.</p>";}
+        }
+
+        function renderTasks(tasks) {
+            const container = document.getElementById('tasksList');
+            if (!container) return;
+            container.innerHTML = '';
+            if (!tasks || tasks.length === 0) {
+                container.innerHTML = '<p class="text-sm text-[var(--text-medium)] placeholder-text">Aucune tâche disponible.</p>';
+                return;
+            }
+            tasks.forEach(task => {
+                const taskConfig = TASKS_CONFIG_FRONTEND[task.id];
+                if (!taskConfig) {
+                    console.warn(`Configuration manquante pour la tâche ID: ${task.id}`);
+                    return;
+                }
+
+                let taskName = taskConfig.name;
+                if (task.id === 'three_bets') {
+                    taskName = taskName.replace('{COUNT}', currentUserData?.bet_count || task.current_progress || 0);
+                }
+
+                let actionHtml = '';
+                if (task.is_claimed) {
+                    actionHtml = `<span class="task-completed">Réclamé (+${task.pc_reward}<span class="pronocoin-icon"></span>)</span>`;
+                } else if (task.is_claimable) {
+                    if (['tiktok', 'x', 'instagram', 'tg_channel', 'tg_chat'].includes(task.id)) {
+                        actionHtml = `<a href="${taskConfig.link || '#'}" target="_blank" class="bet-button text-xs py-1 px-2 mr-2" onclick="event.stopPropagation(); setTimeout(() => { const claimBtn = document.querySelector('.claim-task-btn[data-taskid=\\'${task.id}\\']'); if(claimBtn) claimBtn.style.display='inline-flex'; }, 1000)">Visiter</a>
+                                      <button class="bet-button claim-task-btn text-xs py-1 px-2" data-taskid="${task.id}" style="display:none;">Réclamer</button>`;
+                    } else {
+                        actionHtml = `<button class="bet-button claim-task-btn text-xs py-1 px-2" data-taskid="${task.id}">Réclamer</button>`;
+                    }
+                } else {
+                    actionHtml = `<span class="text-xs text-[var(--text-dark)]">Non éligible</span>`;
+                }
+
+                const item = document.createElement('div');
+                item.className = 'task-item';
+                item.innerHTML = `
+                    <span class="task-description">${taskName}</span>
+                    <div class="task-reward">
+                        ${actionHtml}
+                    </div>`;
+                container.appendChild(item);
+            });
+            document.querySelectorAll('.claim-task-btn').forEach(btn => {
+                btn.removeEventListener('click', handleClaimTask);
+                btn.addEventListener('click', handleClaimTask);
+            });
+        }
+
+        async function handleClaimTask(event) {
+            const taskId = event.target.dataset.taskid;
+            if (!currentUserId || !taskId) return;
+            try {
+                const result = await makeApiRequest('/api/claim_task_reward', 'POST', { user_id: currentUserId, task_id: taskId });
+                showCustomModal("Récompense Réclamée", result.message, false);
+                await fetchUserProfile(currentUserId); 
+                if (document.getElementById('accueil-section').classList.contains('current-page')) { 
+                    await renderAccueilPage(document.getElementById('accueil-section'));
+                }
+            } catch (error) { /* Erreur gérée par makeApiRequest */ }
+        }
+        
+        function updateDailyRewardButtonUI(userData) {
+            const btn = document.getElementById('claimDailyRewardBtn');
+            const msgEl = document.getElementById('dailyRewardMessage');
+            if (!btn || !msgEl || !userData) return;
+
+            const today = new Date().toISOString().split('T')[0];
+            if (userData.last_daily_reward_date === today) {
+                btn.disabled = true;
+                btn.innerHTML = "Récompense Quotidienne Réclamée";
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                msgEl.textContent = `Revenez demain !`;
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `Réclamer 5 <span class="pronocoin-icon"></span> Quotidiens`;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                msgEl.textContent = '';
+            }
+        }
+        async function handleClaimDailyReward() { 
+            if (!currentUserId) return;
+            try {
+                const result = await makeApiRequest('/api/claim_daily_reward', 'POST', { user_id: currentUserId });
+                showCustomModal("Récompense Quotidienne", result.message, false);
+                await fetchUserProfile(currentUserId); 
+                 if (document.getElementById('accueil-section').classList.contains('current-page')) {
+                    await renderAccueilPage(document.getElementById('accueil-section'));
+                }
+            } catch (error) { /* Erreur gérée */ }
+        }
+
+        function updateAdRewardButtonUI(userData) {
+            const btn = document.getElementById('watchAdBtn');
+            const msgEl = document.getElementById('adRewardMessage');
+            if (!btn || !msgEl || !userData) return;
+
+            const now = Math.floor(Date.now() / 1000);
+            const lastAdTime = parseFloat(userData.last_ad_reward_timestamp || 0);
+            const cooldown = 3600; 
+
+            if ((now - lastAdTime) < cooldown) {
+                btn.disabled = true;
+                const remaining = cooldown - (now - lastAdTime);
+                const minutes = Math.floor(remaining / 60);
+                const seconds = Math.floor(remaining % 60);
+                msgEl.textContent = `Prochaine pub dans ${minutes}m ${seconds}s`;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btn.disabled = false;
+                msgEl.textContent = '';
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.innerHTML = `Regarder une pub (+1 <span class="pronocoin-icon"></span>)`; 
+            }
+        }
+
+        async function handleWatchAd() {
+            if (!currentUserId) return;
+            const watchAdBtn = document.getElementById('watchAdBtn');
+            watchAdBtn.disabled = true;
+            watchAdBtn.innerHTML = 'Chargement pub...';
+
+            showCustomModal("Publicité", "Visionnage de la publicité en cours...", false);
+            const modalMsg = document.getElementById('customModalMessage');
+            const modalActions = document.getElementById('customModalActions');
+            const modalTitle = document.getElementById('customModalTitle');
+            const originalTitle = modalTitle.textContent;
+            const originalMsg = modalMsg.innerHTML;
+            const originalActions = modalActions.innerHTML;
+
+            modalTitle.textContent = "Publicité PRONObot";
+            modalMsg.innerHTML = `<div class="text-center p-4">
+                <p class="text-lg font-semibold mb-2">Votre publicité</p>
+                <img src="https://placehold.co/300x200/BF40BF/FFFFFF?text=Super+Pub+PRONObot" alt="Publicité" class="mx-auto rounded-lg shadow-lg">
+                <p class="text-xs mt-2 text-[var(--text-dark)]">Merci de soutenir PRONObot !</p>
+            </div>`;
+            modalActions.innerHTML = `<p class="text-sm text-[var(--text-medium)]">Récompense dans <span id="adTimer">5</span>s...</p>`;
+            
+            let adTimer = 5;
+            const timerInterval = setInterval(() => {
+                adTimer--;
+                const adTimerEl = document.getElementById('adTimer');
+                if (adTimerEl) adTimerEl.textContent = adTimer;
+                if (adTimer <= 0) {
+                    clearInterval(timerInterval);
+                    modalTitle.textContent = originalTitle;
+                    modalMsg.innerHTML = originalMsg;
+                    modalActions.innerHTML = originalActions;
+                    closeCustomModal(); 
+                    claimAdRewardApiCall();
+                }
+            }, 1000);
+        }
+        
+        async function claimAdRewardApiCall() {
+            try {
+                const result = await makeApiRequest('/api/claim_ad_reward', 'POST', { user_id: currentUserId });
+                showCustomModal("Récompense Publicitaire", result.message, false);
+                await fetchUserProfile(currentUserId);
+                if (document.getElementById('accueil-section').classList.contains('current-page')) {
+                    await renderAccueilPage(document.getElementById('accueil-section')); 
+                }
+            } catch (error) {
+                const watchAdBtn = document.getElementById('watchAdBtn');
+                if (watchAdBtn) {
+                     watchAdBtn.disabled = false;
+                     watchAdBtn.innerHTML = 'Regarder une pub (+1 <span class="pronocoin-icon"></span>)';
+                }
+                 if (currentUserData) updateAdRewardButtonUI(currentUserData); 
+            }
+        }
+
+
+        function renderPronosSuivis(pronos) {
+            const container = document.getElementById('pronosSuivisContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            if (!pronos || pronos.length === 0) {
+                container.innerHTML = '<p class="text-sm text-center text-[var(--text-medium)] py-3 placeholder-text">Aucun pronostic suivi.</p>'; return;
+            }
+            pronos.forEach(prono => {
+                const item = document.createElement('div');
+                item.className = 'p-3 border-b border-[var(--border-color)] flex justify-between items-center'; 
+                item.innerHTML = `
+                    <div>
+                        <h4 class="font-semibold text-sm mb-1">${prono.Match}</h4>
+                        <p class="text-xs text-[var(--text-medium)]">${formatDate(prono.Date)} ${prono.Heure} - ${prono.Pari} @${prono.Cote}</p>
+                    </div>
+                    <button class="bet-button cancel-button text-xs py-1 px-2 unfollow-btn" data-matchid="${prono.MatchID}">Ne plus suivre</button>
+                `;
+                container.appendChild(item);
+            });
+            document.querySelectorAll('.unfollow-btn').forEach(btn => {
+                btn.removeEventListener('click', handleToggleSuivi);
+                btn.addEventListener('click', handleToggleSuivi);
+            });
+        }
+        async function handleToggleSuivi(event) {
+            const matchId = event.target.dataset.matchid;
+            if(!currentUserId || !matchId) return;
+            try {
+                const result = await makeApiRequest('/api/toggle_suivi_prono', 'POST', {user_id: currentUserId, match_id: matchId});
+                showCustomModal("Suivi Prono", result.message, false);
+                
+                await fetchUserProfile(currentUserId); 
+                
+                const currentPageId = document.querySelector('.content-section:not(.hidden-page)')?.id;
+                if (currentPageId === 'accueil-section') {
+                    await renderAccueilPage(document.getElementById('accueil-section'));
+                }
+                if (currentPageId === 'pronos-section') {
+                    await renderPronosPage(document.getElementById('pronos-section')); 
+                }
+            } catch (error) {}
+        }
+
+
+        // --- Page Pronostics ---
+        async function renderPronosPage(sectionElement) {
+            sectionElement.innerHTML = `
+                <div class="card p-3 mb-4 text-sm text-center text-[var(--text-medium)]">
+                    Découvrez nos analyses et utilisez vos <span class="pronocoin-icon"></span> pour débloquer les pronostics secrets !
+                </div>
+                <div class="mb-4 text-right">
+                     <input type="date" id="dateFilterProno" class="p-2 text-sm">
+                </div>
+                <div id="choixDuJourContainer" class="mb-4">
+                    <h3 class="section-subtitle mt-0 mb-3">Choix du Jour</h3>
+                    <p class="loading placeholder-text">Chargement...</p>
+                </div>
+                <h3 class="section-subtitle mt-0 mb-3">Autres Pronostics</h3>
+                <div id="pronostics-list" class="matches-grid"> 
+                    <p class="loading placeholder-text">Chargement des pronostics...</p>
+                </div>`;
+            document.getElementById('dateFilterProno')?.addEventListener('change', () => renderPronosPage(sectionElement)); 
+
+            const choixDuJourContainer = document.getElementById('choixDuJourContainer');
+            const autresPronosList = document.getElementById('pronostics-list');
+            
+            try {
+                const dateFilter = document.getElementById('dateFilterProno').value;
+                const endpoint = dateFilter ? `/api/matchs_csv?date=${dateFilter}` : '/api/matchs_csv';
+                const pronostics = await makeApiRequest(endpoint);
+
+                choixDuJourContainer.innerHTML = '<h3 class="section-subtitle mt-0 mb-3">Choix du Jour</h3>'; 
+                autresPronosList.innerHTML = '';
+
+                if (!pronostics || pronostics.length === 0) {
+                    autresPronosList.innerHTML = '<p class="text-[var(--text-medium)] p-4 text-center placeholder-text">Aucun pronostic disponible.</p>';
+                    choixDuJourContainer.insertAdjacentHTML('beforeend', '<p class="text-[var(--text-medium)] p-4 text-center placeholder-text">Aucun choix du jour.</p>');
+                    return;
+                }
+
+                if (pronostics.length > 0) {
+                    choixDuJourContainer.appendChild(createPronoCard(pronostics[0]));
+                }
+                pronostics.slice(1).forEach(prono => autresPronosList.appendChild(createPronoCard(prono)));
+                addCardEventListeners();
+            } catch (error) {
+                autresPronosList.innerHTML = '<p class="error-message">Impossible de charger les pronostics.</p>';
+            }
+        }
+        
+        function createPronoCard(prono) {
+            const card = document.createElement('div');
+            card.className = 'card match-card'; 
+
+            const isUnlocked = currentUserData?.unlocked_pronos?.includes(prono.MatchID);
+            const isFollowed = currentUserData?.pronos_suivis?.includes(prono.MatchID);
+
+            if (!isUnlocked) card.classList.add('locked-prono');
+            
+            let teams = prono.Match.split('vs');
+            let team1 = teams[0] ? teams[0].trim() : prono.Match;
+            let team2 = teams[1] ? teams[1].trim() : '';
+
+            let detailsHtml, actionButtonHtml, followButtonHtml;
+            if (isUnlocked) {
+                detailsHtml = `<div class="odds-section"><span class="bet-suggestion">${prono.Pari}</span><span class="odds-value">Cote: ${prono.Cote}</span></div>`;
+                actionButtonHtml = `<button data-matchid="${prono.MatchID}" class="bet-button bet-prono-btn w-full mt-3">Parier 10 <span class="pronocoin-icon"></span></button>`;
+            } else {
+                detailsHtml = `<div class="odds-section"><span class="bet-suggestion">🔒 Prono Secret</span><span class="odds-value">Cote: ???</span></div>`;
+                actionButtonHtml = `<button data-matchid="${prono.MatchID}" class="bet-button unlock-prono-btn w-full mt-3">Débloquer (10 <span class="pronocoin-icon"></span>)</button>`;
+            }
+            followButtonHtml = `<button data-matchid="${prono.MatchID}" class="bet-button ${isFollowed ? 'cancel-button' : ''} follow-prono-btn w-full mt-2 text-xs py-1.5">${isFollowed ? 'Suivi ⭐' : 'Suivre ⭐'}</button>`;
+
+
+            card.innerHTML = `
+                <div class="teams">
+                    <span class="team-name">${team1}</span>
+                    ${team2 ? '<span class="vs">VS</span><span class="team-name">' + team2 + '</span>' : ''}
+                </div>
+                <p class="match-datetime">${formatDate(prono.Date)} ${prono.Heure} <span class="text-[var(--text-dark)]">(ID: ${prono.MatchID})</span></p>
+                ${detailsHtml}
+                <div class="details-grid mt-3">
+                    <div><strong>Risque</strong> <span class="tag ${getRiskTagClass(prono.Risque)}">${prono.Risque}</span></div>
+                    <div><strong>Note</strong> ${prono.Note}/5</div>
+                    <div><strong>Niveau</strong> ${prono.Niveau}</div>
+                </div>
+                <div class="mt-auto pt-3"> 
+                    ${actionButtonHtml}
+                    ${followButtonHtml}
+                </div>`;
+            return card;
+        }
+
+        function addCardEventListeners() {
+            document.querySelectorAll('.bet-prono-btn').forEach(button => {
+                button.removeEventListener('click', handleParierClick); 
+                button.addEventListener('click', handleParierClick);
+            });
+            document.querySelectorAll('.unlock-prono-btn').forEach(button => {
+                button.removeEventListener('click', handleUnlockClick); 
+                button.addEventListener('click', handleUnlockClick);
+            });
+            document.querySelectorAll('.follow-prono-btn').forEach(button => {
+                button.removeEventListener('click', handleToggleSuivi); 
+                button.addEventListener('click', handleToggleSuivi);
+            });
+        }
+        
+        async function handleParierClick(event) {
+            const matchId = event.target.closest('.bet-button').dataset.matchid; 
+            if (!currentUserId) {
+                showCustomModal("Erreur", "User ID non défini.", false); return;
+            }
+            const allPronosResponse = await makeApiRequest('/api/matchs_csv'); 
+            const prono = allPronosResponse.find(p => p.MatchID === matchId);
+
+            showCustomModal(
+                "Confirmation de Pari", 
+                `Parier ${PRONOCOINS_BET_COST} PC sur "${prono ? prono.Pari : 'ce pronostic'}" pour ${prono ? prono.Match : matchId} ?`, 
+                true, 
+                async () => { await placerPari(currentUserId, matchId, PRONOCOINS_BET_COST); }
+            );
+        }
+
+        async function handleUnlockClick(event) {
+            const matchId = event.target.closest('.bet-button').dataset.matchid;
+            if (!currentUserId) {
+                showCustomModal("Erreur", "User ID non défini.", false); return;
+            }
+            showCustomModal(
+                "Débloquer Pronostic",
+                `Voulez-vous dépenser ${PRONOCOINS_UNLOCK_COST} PC pour débloquer le pronostic ${matchId} ?`, true,
+                async () => {
+                    try {
+                        const result = await makeApiRequest('/api/unlock_prono', 'POST', { user_id: currentUserId, match_id: matchId });
+                        showCustomModal("Succès", result.message || "Pronostic débloqué !", false);
+                        await fetchUserProfile(currentUserId); 
+                        if (document.getElementById('pronos-section').classList.contains('current-page')) {
+                             await renderPronosPage(document.getElementById('pronos-section')); 
+                        }
+                    } catch (error) { /* Erreur gérée par makeApiRequest */ }
+                }
+            );
+        }
+
+        async function placerPari(userId, matchId, montant) {
+            try {
+                const result = await makeApiRequest('/api/parier', 'POST', { user_id: userId, match_id: matchId, montant: montant });
+                showCustomModal("Pari Confirmé!", `Votre pari a été placé. Nouveau solde: ${result.new_balance} PC.`, false);
+                await fetchUserProfile(userId); 
+                if (document.getElementById('accueil-section').classList.contains('current-page')) {
+                    await renderAccueilPage(document.getElementById('accueil-section'));
+                }
+            } catch (error) { /* Erreur gérée par makeApiRequest */ }
+        }
+        
+        // --- Page Activité ---
+        let bilanChartInstance = null; 
+
+        async function renderActivitePage(sectionElement) {
+            sectionElement.innerHTML = `
+                <div class="tab-navigation">
+                    <button class="tab-button active" data-tab-target="#bilan-content-tab">Bilan</button>
+                    <button class="tab-button" data-tab-target="#historique-paris-content-tab">Mes Paris</button>
+                </div>
+                <div id="bilan-content-tab" class="tab-content active">
+                    <div class="card">
+                        <h3 class="section-subtitle mt-0 mb-4">Bilan des Paris</h3>
+                        <div id="bilanStatsText" class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm mb-6">
+                             <p class="loading placeholder-text col-span-2">Chargement du bilan...</p>
+                        </div>
+                        <div class="chart-container-wrapper card" style="background-color: rgba(var(--card-bg-rgb), 0.5); padding: 10px; border-radius: 8px;">
+                             <canvas id="bilanChartCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div id="historique-paris-content-tab" class="tab-content">
+                     <div class="card">
+                        <h3 class="section-subtitle mt-0 mb-3">Mes Paris (Historique & En Cours)</h3>
+                        <div class="mb-3 text-right">
+                             <input type="date" id="historiqueDateFilter" class="p-2 text-sm">
+                        </div>
+                        <div id="historiqueParisContainer">
+                            <p class="loading placeholder-text">Chargement de l'historique...</p>
+                        </div>
+                    </div>
+                </div>`;
+            document.getElementById('historiqueDateFilter')?.addEventListener('change', renderHistoriqueParis);
+
+            const bilanContainer = document.getElementById('bilanStatsText');
+            try {
+                const bilanData = await makeApiRequest(`/api/bilan?user_id=${currentUserId}`);
+                bilanContainer.innerHTML = `
+                    <div><strong class="text-[var(--text-medium)]">Paris Réglés:</strong> <span class="value text-[var(--text-light)]">${bilanData.totalBets}</span></div>
+                    <div><strong class="text-[var(--text-medium)]">Gagnés:</strong> <span class="value text-[var(--success-color)]">${bilanData.wonBets}</span></div>
+                    <div><strong class="text-[var(--text-medium)]">Perdus:</strong> <span class="value text-[var(--danger-color)]">${bilanData.lostBets}</span></div>
+                    <div><strong class="text-[var(--text-medium)]">P&L Paris Réglés:</strong> <span class="value text-[var(--text-light)]">${bilanData.netGains.toFixed(0)}</span> <span class="pronocoin-icon"></span></div>
+                    <div class="col-span-2 mt-1"><strong class="text-[var(--text-medium)]">ROI Paris Réglés:</strong> <span class="value text-[var(--text-light)]">${bilanData.roi.toFixed(1)}</span>%</div>`;
+            } catch (e) { if(bilanContainer) bilanContainer.innerHTML = "<p class='error-message col-span-2'>Erreur chargement bilan.</p>";}
+            
+            await renderBilanChart(); 
+            await renderHistoriqueParis(); 
+        }
+
+        async function renderBilanChart() {
+            const canvasEl = document.getElementById('bilanChartCanvas');
+            if (!canvasEl) return;
+            const canvasCtx = canvasEl.getContext('2d');
+            if (!canvasCtx) return;
+
+            try {
+                const chartData = await makeApiRequest(`/api/bilan_chart_data?user_id=${currentUserId}`);
+                if (bilanChartInstance) {
+                    bilanChartInstance.destroy();
+                }
+                if (!chartData || chartData.labels.length === 0) {
+                    document.querySelector('.chart-container-wrapper').innerHTML = "<p class='placeholder-text p-4'>Pas assez de données pour afficher le graphique.</p>";
+                    return;
+                }
+
+                bilanChartInstance = new Chart(canvasCtx, {
+                    type: 'bar', 
+                    data: {
+                        labels: chartData.labels, 
+                        datasets: [
+                            {
+                                label: 'Paris Gagnés', data: chartData.gagnes,
+                                backgroundColor: 'rgba(57, 255, 20, 0.6)', 
+                                borderColor: 'rgba(57, 255, 20, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'yParis',
+                                order: 2
+                            },
+                            {
+                                label: 'Paris Perdus', data: chartData.perdus,
+                                backgroundColor: 'rgba(255, 49, 49, 0.6)', 
+                                borderColor: 'rgba(255, 49, 49, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'yParis',
+                                order: 2
+                            },
+                            {
+                                label: 'P&L Cumulé (PC)', data: chartData.pnl_cumule,
+                                borderColor: 'var(--primary-purple)', 
+                                backgroundColor: 'rgba(var(--primary-purple-rgb), 0.1)',
+                                tension: 0.3, fill: true, type: 'line',
+                                yAxisID: 'yPNL', order: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false, },
+                        scales: {
+                            x: { 
+                                ticks: { color: 'var(--text-medium)', font: {size: 10} },
+                                grid: { color: 'rgba(var(--text-dark-rgb, 112, 112, 144), 0.1)' }
+                            },
+                            yParis: { 
+                                type: 'linear', display: true, position: 'left',
+                                title: { display: true, text: 'Nb Paris', color: 'var(--text-medium)', font:{size:10} },
+                                ticks: { color: 'var(--text-medium)', stepSize: 1, font: {size:10} },
+                                grid: { color: 'rgba(var(--text-dark-rgb, 112, 112, 144), 0.1)' }
+                            },
+                            yPNL: { 
+                                type: 'linear', display: true, position: 'right',
+                                title: { display: true, text: 'P&L (PC)', color: 'var(--primary-purple)', font:{size:10} },
+                                ticks: { color: 'var(--primary-purple)', font: {size:10} },
+                                grid: { drawOnChartArea: false } 
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true, position: 'bottom', labels: { color: 'var(--text-light)', font: {size: 10}, boxWidth:15, padding:15 } },
+                            tooltip: { titleColor: 'var(--text-light)', bodyColor: 'var(--text-medium)', backgroundColor: 'var(--card-bg-opaque)', borderColor: 'var(--border-color)', borderWidth:1 }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Erreur chargement données graphique bilan:", error);
+                const chartContainer = document.querySelector('.chart-container-wrapper');
+                if(chartContainer) chartContainer.innerHTML = "<p class='error-message'>Impossible de charger le graphique du bilan.</p>";
+            }
+        }
+
+
+        async function renderHistoriqueParis() { 
+            const container = document.getElementById('historiqueParisContainer');
+            if(!container) return;
+            showLoadingPlaceholder('#historiqueParisContainer', 'Chargement de vos paris...');
+            try {
+                const dateFilterEl = document.getElementById('historiqueDateFilter');
+                const dateFilter = dateFilterEl ? dateFilterEl.value : '';
+                const endpoint = dateFilter ? `/api/historique_paris?user_id=${currentUserId}&date=${dateFilter}` : `/api/historique_paris?user_id=${currentUserId}`;
+                const historique = await makeApiRequest(endpoint);
+                clearContainer('#historiqueParisContainer');
+                if (!historique || historique.length === 0) {
+                    container.innerHTML = '<p class="text-sm text-center text-[var(--text-medium)] py-3 placeholder-text">Aucun pari trouvé.</p>'; return;
+                }
+                historique.forEach(pari => {
+                    const item = document.createElement('div');
+                    let statusClass = '';
+                    let gainText = "";
+                    let gainAmount = 0;
+
+                    if (pari.StatutPari === 'gagne') {
+                        statusClass = 'bg-[rgba(var(--success-color),0.05)]';
+                        gainAmount = parseFloat(pari.Gain) || 0; 
+                        if (gainAmount > 0) {
+                           gainText = `<span class="font-bold text-[var(--success-color)]">(+${gainAmount.toFixed(0)} <span class="pronocoin-icon"></span>)</span>`;
+                        } else { 
+                           gainText = `<span class="font-bold text-[var(--success-color)]">(Gagné)</span>`;
+                        }
+                    } else if (pari.StatutPari === 'perdu') {
+                        statusClass = 'bg-[rgba(var(--danger-color),0.05)]';
+                        gainText = `<span class="font-bold text-[var(--danger-color)]">(-${pari.Montant} <span class="pronocoin-icon"></span>)</span>`;
+                    } else if (pari.StatutPari === 'rembourse') {
+                        gainText = `<span class="font-bold text-[var(--text-medium)]">(Remboursé)</span>`;
+                    } else if (pari.StatutPari === 'annule') {
+                        gainText = `<span class="font-bold text-[var(--text-medium)]">(Annulé)</span>`;
+                    } else if (pari.StatutPari === 'en_cours') {
+                        gainText = `<span class="font-bold text-[var(--warning-color)]">(En cours)</span>`;
+                    }
+                    
+                    item.className = `p-3 border-b border-[var(--border-color)] text-sm ${statusClass}`;
+                    item.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <p class="font-semibold text-[var(--text-light)]">${pari.MatchName}</p>
+                            <span class="tag statut-${pari.StatutPari.toLowerCase()}">${pari.StatutPari} ${gainText}</span>
+                        </div>
+                        <p class="text-xs text-[var(--text-medium)]">Parié: ${pari.BetType} @${pari.CotePari} | Mise: ${pari.Montant} <span class="pronocoin-icon"></span></p>
+                        <p class="text-xs text-[var(--text-dark)]">Date: ${formatDate(pari.DatePari.split('T')[0])}</p>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch(e) { container.innerHTML = "<p class='error-message'>Erreur chargement historique des paris.</p>";}
+        }
+        
+
+        // --- Page Profil ---
+        async function renderProfilPage(sectionElement) {
+            sectionElement.innerHTML = `
+                <div class="tab-navigation">
+                    <button class="tab-button active" data-tab-target="#mon-compte-content-tab">Mon Compte</button>
+                    <button class="tab-button" data-tab-target="#classement-content-tab">Classement</button>
+                </div>
+                <div id="mon-compte-content-tab" class="tab-content active">
+                    <div class="card profile-header">
+                        <img id="userAvatar" src="https://placehold.co/80x80/1e182b/BF40BF?text=PZ&font=montserrat" alt="Avatar" class="profile-picture">
+                        <h3 id="profilePseudoDisplay" class="profile-name">Chargement...</h3>
+                        <p id="profileTelegramId" class="profile-username-id">ID: ...</p>
+                    </div>
+                    <div class="card">
+                        <div class="account-item"><strong>Niveau:</strong> <span id="profileLevel" class="value">--</span></div>
+                        <div class="account-item">
+                            <strong>XP:</strong> 
+                            <span class="value"><span id="profileXp">--</span> / <span id="profileNextLevelXp">--</span></span>
+                        </div>
+                        <div class="xp-progress-container mb-4">
+                            <div id="xpProgressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="account-item"><strong>Solde PC:</strong> <span id="profileBalancePC" class="value">-- <span class="pronocoin-icon"></span></span></div>
+                        <div class="account-item"><strong>P&L Paris:</strong> <span id="profileNetGains" class="value">-- <span class="pronocoin-icon"></span></span></div>
+                        <div class="account-item"><strong>PC en Jeu:</strong> <span id="profilePCInPlay" class="value">-- <span class="pronocoin-icon"></span></span></div>
+
+                        <div class="profile-pseudo-section mt-6">
+                            <label for="pseudoInput">Changer de Pseudo:</label>
+                            <input type="text" id="pseudoInput" placeholder="Nouveau pseudo">
+                            <button id="savePseudoBtn" class="bet-button w-full mt-2 text-sm py-2.5">Sauvegarder</button>
+                            <p id="pseudo-message" class="text-sm text-center mt-2 min-h-[1.1em]"></p>
+                        </div>
+                         <button id="linkGoogleBtn" class="bet-button w-full mt-3 text-sm py-2.5" style="background-color: var(--text-dark);">
+                            Lier Compte Google <span id="googleLinkStatus" class="text-xs">(Non lié)</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="classement-content-tab" class="tab-content">
+                    <div class="card">
+                        <h3 class="section-subtitle mt-0 mb-3">Classement des Joueurs</h3>
+                        <ul id="leaderboardList" class="leaderboard-list">
+                            <p class="loading placeholder-text">Chargement du classement...</p>
+                        </ul>
+                    </div>
+                </div>`;
+            
+            document.getElementById('savePseudoBtn')?.addEventListener('click', handleSavePseudo);
+            document.getElementById('linkGoogleBtn')?.addEventListener('click', handleLinkGoogle); 
+
+            if (!currentUserData) await fetchUserProfile(currentUserId); 
+            if (currentUserData) await updateProfilePageUI(currentUserData); 
+            
+            await renderLeaderboard();
+        }
+        
+        async function updateProfilePageUI(userData) { 
+             if (!userData) return;
+            const profilePseudoDisplay = document.getElementById('profilePseudoDisplay');
+            const profileTelegramId = document.getElementById('profileTelegramId');
+            const profileLevel = document.getElementById('profileLevel');
+            const profileXp = document.getElementById('profileXp');
+            const profileNextLevelXp = document.getElementById('profileNextLevelXp');
+            const xpProgressBar = document.getElementById('xpProgressBar');
+            const pseudoInput = document.getElementById('pseudoInput');
+            const googleLinkStatus = document.getElementById('googleLinkStatus');
+            const userAvatar = document.getElementById('userAvatar');
+            const profileBalancePC = document.getElementById('profileBalancePC');
+            const profileNetGains = document.getElementById('profileNetGains');
+            const profilePCInPlay = document.getElementById('profilePCInPlay');
+
+
+            let tgUser = TG_WEB_APP?.initDataUnsafe?.user;
+
+            if(profilePseudoDisplay) profilePseudoDisplay.textContent = userData.pseudo || (tgUser?.username || tgUser?.first_name || 'N/A');
+            if(userAvatar) {
+                if (tgUser?.photo_url) {
+                    userAvatar.src = tgUser.photo_url;
+                } else if (userData.pseudo && userData.pseudo !== 'N/A' && !userData.pseudo.startsWith('User_')) { 
+                    userAvatar.src = `https://placehold.co/80x80/1e182b/BF40BF?text=${userData.pseudo.substring(0,2).toUpperCase()}&font=montserrat`;
+                } else { 
+                     userAvatar.src = `https://placehold.co/80x80/1e182b/BF40BF?text=PZ&font=montserrat`;
+                }
+            }
+
+
+            if(profileTelegramId) profileTelegramId.textContent = `ID: ${userData.user_id} ${tgUser?.username ? '(@'+tgUser.username+')' : ''}`;
+            if(pseudoInput) pseudoInput.value = userData.pseudo || '';
+            
+            if(profileLevel) profileLevel.textContent = userData.level || 1;
+            if(profileXp) profileXp.textContent = userData.xp || 0;
+            if(profileBalancePC) profileBalancePC.innerHTML = `${userData.pronocoins_balance || 0} <span class="pronocoin-icon"></span>`;
+            
+            const currentLevelForThreshold = userData.level || 1;
+            const currentLevelXpForThreshold = LEVELS_XP[currentLevelForThreshold - 1]; 
+            const nextLevelXpThreshold = LEVELS_XP[currentLevelForThreshold]; 
+            
+            if(profileNextLevelXp) {
+                 profileNextLevelXp.textContent = (currentLevelForThreshold >= LEVELS_XP.length) ? 'Max' : (nextLevelXpThreshold || 'Max');
+            }
+            
+            if(xpProgressBar) {
+                let progress = 0;
+                if (currentLevelForThreshold >= LEVELS_XP.length) { 
+                    progress = 100;
+                } else if (typeof nextLevelXpThreshold === 'number' && nextLevelXpThreshold > currentLevelXpForThreshold) {
+                    const xpIntoCurrentLevel = (userData.xp || 0) - currentLevelXpForThreshold;
+                    const xpForThisLevel = nextLevelXpThreshold - currentLevelXpForThreshold;
+                    progress = xpForThisLevel > 0 ? (xpIntoCurrentLevel / xpForThisLevel) * 100 : 0;
+                }
+                xpProgressBar.style.width = `${Math.min(Math.max(progress,0), 100)}%`;
+            }
+            
+            if(googleLinkStatus) {
+                googleLinkStatus.textContent = userData.email ? `(Lié: ${userData.email.substring(0,10)}...)` : '(Non lié)';
+            }
+
+            if (profileNetGains || profilePCInPlay) {
+                try {
+                    const bilanData = await makeApiRequest(`/api/bilan?user_id=${currentUserId}`);
+                    if (profileNetGains) profileNetGains.innerHTML = `${bilanData.netGains.toFixed(0)} <span class="pronocoin-icon"></span>`;
+                    
+                    const parisEnCours = await makeApiRequest(`/api/paris_en_cours?user_id=${currentUserId}`);
+                    const pcInPlay = parisEnCours.reduce((sum, bet) => sum + parseInt(bet.Montant), 0);
+                    if (profilePCInPlay) profilePCInPlay.innerHTML = `${pcInPlay} <span class="pronocoin-icon"></span>`;
+
+                } catch (e) {
+                    if (profileNetGains) profileNetGains.textContent = "Erreur";
+                    if (profilePCInPlay) profilePCInPlay.textContent = "Erreur";
+                }
+            }
+        }
+
+        async function handleSavePseudo() {
+            const newPseudo = document.getElementById('pseudoInput').value.trim();
+            const pseudoMessageEl = document.getElementById('pseudo-message');
+            if (!currentUserId || !newPseudo) {
+                if(pseudoMessageEl) pseudoMessageEl.textContent = "Pseudo invalide.";
+                return;
+            }
+            if (newPseudo.length < 3 || newPseudo.length > 20) {
+                 if(pseudoMessageEl) pseudoMessageEl.textContent = "Le pseudo doit faire 3-20 caractères.";
+                return;
+            }
+            try {
+                const result = await makeApiRequest('/api/update_pseudo', 'POST', {user_id: currentUserId, pseudo: newPseudo });
+                if(pseudoMessageEl) {
+                    pseudoMessageEl.textContent = result.message;
+                    pseudoMessageEl.className = 'text-sm text-center mt-2 text-[var(--success-color)]';
+                }
+                await fetchUserProfile(currentUserId); 
+                if(document.getElementById('profil-section').classList.contains('current-page')){
+                    updateProfilePageUI(currentUserData); 
+                }
+            } catch (error) {
+                if(pseudoMessageEl) {
+                    pseudoMessageEl.textContent = error.message || "Erreur.";
+                    pseudoMessageEl.className = 'text-sm text-center mt-2 error-message';
+                }
+            }
+        }
+        async function handleLinkGoogle() {
+            if (!currentUserId) return;
+            showCustomModal("Liaison Google", "Cette fonctionnalité est une simulation. Une vraie liaison Google nécessite une configuration OAuth.", true, async () => {
+                try {
+                    const result = await makeApiRequest('/api/link_google_account', 'POST', {user_id: currentUserId }); 
+                    showCustomModal("Compte Google", result.message || "Liaison simulée réussie !", false);
+                    await fetchUserProfile(currentUserId);
+                     if(document.getElementById('profil-section').classList.contains('current-page')){
+                        updateProfilePageUI(currentUserData);
+                    }
+                } catch (error) { /* gérée */ }
+            });
+        }
+
+        async function renderLeaderboard() {
+            const container = document.getElementById('leaderboardList');
+            if(!container) return;
+            showLoadingPlaceholder('#leaderboardList', 'Chargement du classement...');
+            try {
+                const leaderboardData = await makeApiRequest('/api/leaderboard');
+                clearContainer('#leaderboardList');
+                if (!leaderboardData || leaderboardData.length === 0) {
+                    container.innerHTML = '<p class="text-sm text-center text-[var(--text-medium)] py-3 placeholder-text">Classement indisponible.</p>'; return;
+                }
+                leaderboardData.forEach((user, index) => {
+                    const item = document.createElement('li');
+                    item.className = 'leaderboard-item';
+                    item.innerHTML = `
+                        <span class="rank">#${index + 1}</span>
+                        <img src="https://placehold.co/36x36/${getComputedStyle(document.documentElement).getPropertyValue('--card-bg-opaque').replace('#','').substring(0,6)}/BF40BF?text=${user.pseudo.substring(0,1).toUpperCase()}&font=montserrat" alt="${user.pseudo}" class="profile-pic-small">
+                        <div class="user-info">
+                            <span class="pseudo">${user.pseudo}</span>
+                            <span class="join-date">Niv. ${user.level}</span>
+                        </div>
+                        <div class="stats">
+                            <span class="balance">${user.pronocoins_balance} <span class="pronocoin-icon"></span></span>
+                            <span class="xp-level">${user.xp} XP</span>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (e) { container.innerHTML = "<p class='error-message'>Erreur chargement classement.</p>";}
+        }
+        
+
+        // --- Modal Personnalisé ---
+        let modalConfirmCallback = null;
+        function showCustomModal(title, message, showConfirmButtons = true, onConfirm = null) {
+            const overlay = document.getElementById('customModalOverlay');
+            const modalTitle = document.getElementById('customModalTitle');
+            const modalMessage = document.getElementById('customModalMessage');
+            const confirmBtn = document.getElementById('customModalConfirmBtn');
+            const cancelBtn = document.getElementById('customModalCancelBtn');
+            
+            if (!overlay || !modalTitle || !modalMessage || !confirmBtn || !cancelBtn) {
+                alert(`${title}\n${message}`); return;
+            }
+
+            modalTitle.textContent = title;
+            modalMessage.innerHTML = message; 
+            modalConfirmCallback = onConfirm;
+
+            if (showConfirmButtons && typeof onConfirm === 'function') {
+                confirmBtn.style.display = 'inline-flex';
+                cancelBtn.textContent = 'Annuler';
+            } else {
+                confirmBtn.style.display = 'none';
+                cancelBtn.textContent = 'OK';
+            }
+            overlay.style.display = 'flex';
+        }
+
+        function closeCustomModal() {
+            const overlay = document.getElementById('customModalOverlay');
+            if (overlay) overlay.style.display = 'none';
+            modalConfirmCallback = null;
+        }
+        
+        // --- Tutoriel ---
+        const tutorialSteps = [
+            { title: "Bienvenue !", content: "Bienvenue sur PRONObot ! Préparez-vous à faire vos pronostics et à grimper dans le classement. Vous commencez avec <span class='highlight'>50</span> <span class='pronocoin-inline-logo pronocoin-icon'></span>." },
+            { title: "Pronostics", content: "Consultez nos pronostics quotidiens dans la section 'Pronos'. Débloquez les détails avec vos <span class='pronocoin-inline-logo pronocoin-icon'></span> pour voir nos conseils exclusifs !" },
+            { title: "Paris & Gains", content: "Une fois un prono débloqué, vous pouvez parier dessus. Si votre pari est gagnant, vous remportez des <span class='pronocoin-inline-logo pronocoin-icon'></span> et de l'XP !" },
+            { title: "XP & Niveaux", content: "Gagnez de l'XP en pariant, en débloquant des pronos et en accomplissant des tâches. Montez de niveau pour obtenir des récompenses !" },
+            { title: "Missions", content: "Consultez la section 'Accueil' pour vos missions. Accomplissez-les pour gagner plus de <span class='pronocoin-inline-logo pronocoin-icon'></span> et d'XP." },
+            { title: "C'est parti !", content: "Explorez l'application et que la chance soit avec vous ! N'oubliez pas de réclamer votre récompense quotidienne." }
+        ];
+        let currentTutorialStep = 0;
+
+        function showTutorialStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex >= tutorialSteps.length) return;
+            currentTutorialStep = stepIndex;
+            const step = tutorialSteps[stepIndex];
+            document.getElementById('tutorialModalTitle').textContent = step.title;
+            document.getElementById('tutorialModalStepContent').innerHTML = `<p>${step.content}</p>`; 
+            document.getElementById('tutorialPrevBtn').style.display = stepIndex > 0 ? 'inline-flex' : 'none';
+            document.getElementById('tutorialNextBtn').style.display = stepIndex < tutorialSteps.length - 1 ? 'inline-flex' : 'none';
+            document.getElementById('tutorialEndBtn').style.display = stepIndex === tutorialSteps.length - 1 ? 'inline-flex' : 'none';
+            document.getElementById('tutorialModalOverlay').style.display = 'flex';
+        }
+
+        async function closeTutorial() { 
+            document.getElementById('tutorialModalOverlay').style.display = 'none';
+            if (currentUserData && !currentUserData.tutorial_completed_reward_claimed) {
+                try {
+                    const result = await makeApiRequest('/api/claim_task_reward', 'POST', {user_id: currentUserId, task_id: 'tutorial'});
+                    showCustomModal("Tutoriel Terminé", result.message || "Récompense du tutoriel réclamée !", false);
+                    await fetchUserProfile(currentUserId); 
+                } catch (error) {
+                    showCustomModal("Tutoriel Terminé", "Vous avez terminé le tutoriel.", false);
+                }
+            }
+            localStorage.setItem(`pronozone_tutorial_seen_${currentUserId}`, 'true');
+        }
+        
+        // --- Initialisation ---
+        async function initializeApp() {
+            const loadingOverlay = document.getElementById('appLoadingOverlay');
+            const appShell = document.querySelector('.app-shell');
+
+            if(loadingOverlay) loadingOverlay.style.display = 'flex';
+            if(appShell) appShell.style.visibility = 'hidden';
+
+
+            console.log("PRONObot Mini App Initialisée");
+            
+            document.getElementById('customModalConfirmBtn')?.addEventListener('click', () => {
+                if (typeof modalConfirmCallback === 'function') modalConfirmCallback();
+                closeCustomModal();
+            });
+            document.getElementById('customModalCancelBtn')?.addEventListener('click', closeCustomModal);
+            document.getElementById('customModalOverlay')?.addEventListener('click', (event) => {
+               if (event.target.id === 'customModalOverlay') closeCustomModal();
+            });
+            
+            document.getElementById('tutorialNextBtn')?.addEventListener('click', () => showTutorialStep(currentTutorialStep + 1));
+            document.getElementById('tutorialPrevBtn')?.addEventListener('click', () => showTutorialStep(currentTutorialStep - 1));
+            document.getElementById('tutorialEndBtn')?.addEventListener('click', closeTutorial);
+
+
+            if (TG_WEB_APP) {
+                TG_WEB_APP.ready(); TG_WEB_APP.expand(); 
+                try {
+                    TG_WEB_APP.setHeaderColor(getComputedStyle(document.documentElement).getPropertyValue('--gradient-mid').trim());
+                    TG_WEB_APP.setBackgroundColor(getComputedStyle(document.documentElement).getPropertyValue('--gradient-end').trim());
+                } catch (e) { console.warn("Erreur config couleurs Telegram:", e); }
+
+                if (TG_WEB_APP.initDataUnsafe && TG_WEB_APP.initDataUnsafe.user) {
+                    currentUserId = TG_WEB_APP.initDataUnsafe.user.id.toString();
+                } else { currentUserId = localStorage.getItem('pronozone_local_user_id'); }
+            } else { currentUserId = localStorage.getItem('pronozone_local_user_id'); }
+            
+            if (!currentUserId) {
+                currentUserId = "localUser_" + Date.now().toString().slice(-6); 
+                localStorage.setItem('pronozone_local_user_id', currentUserId);
+            }
+            
+            console.log("User ID actuel:", currentUserId);
+
+            if (currentUserId) {
+                const userProfile = await fetchUserProfile(currentUserId); 
+                if (userProfile && !localStorage.getItem(`pronozone_tutorial_seen_${currentUserId}`) && !userProfile.tutorial_completed_reward_claimed) {
+                    showTutorialStep(0);
+                }
+            } else {
+                 showCustomModal("Erreur Critique", "Impossible d'identifier l'utilisateur.", false);
+            }
+            showPage('accueil-section'); 
+
+            setTimeout(() => {
+                if(loadingOverlay) loadingOverlay.style.opacity = '0';
+                if(appShell) appShell.style.visibility = 'visible';
+                setTimeout(() => {
+                    if(loadingOverlay) loadingOverlay.style.display = 'none';
+                }, 500); 
+            }, 1800); 
+        }
+
+        window.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>

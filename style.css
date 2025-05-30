@@ -1,0 +1,422 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+
+:root {
+    --primary-purple: #BF40BF; /* Violet Pronozone principal */
+    --primary-purple-darker: #9F309F;
+    --gradient-start: #2c0f3b; /* Violet très sombre */
+    --gradient-mid: #1a1a2e;   /* Bleu nuit/violet */
+    --gradient-end: #0d0d1f;   /* Presque noir bleuté */
+    --text-light: #f0f0f8;
+    --text-medium: #a0a0c0;
+    --text-dark: #707090;
+    --card-bg: rgba(40, 30, 60, 0.7); /* Fond de carte semi-transparent */
+    --card-bg-opaque: #1e182b; /* Fond de carte plus opaque */
+    --border-color: rgba(191, 64, 191, 0.3); /* Bordure violette subtile */
+    --success-color: #39FF14; /* Vert néon pour succès */
+    --danger-color: #FF3131; /* Rouge néon pour erreurs/pertes */
+    --font-main: 'Montserrat', sans-serif;
+    --shadow-light: 0 4px 15px rgba(191, 64, 191, 0.1);
+    --shadow-strong: 0 6px 20px rgba(191, 64, 191, 0.2);
+}
+
+body {
+    font-family: var(--font-main);
+    margin: 0;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+    background-attachment: fixed;
+    color: var(--text-light);
+    overscroll-behavior-y: contain;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.app-container {
+    padding: 20px;
+    padding-bottom: 85px; /* Space for fixed bottom nav + شويه */
+    min-height: calc(100vh - 105px);
+    max-width: 600px; /* Max width for better readability on larger mini-app views */
+    margin: 0 auto; /* Center content */
+}
+
+.header {
+    text-align: center;
+    padding: 25px 0;
+    margin-bottom: 20px;
+}
+
+.header img.logo {
+    max-width: 120px; /* Ajustez selon votre logo */
+    margin-bottom: 15px;
+    filter: drop-shadow(0 0 10px var(--primary-purple)); /* Effet néon léger */
+}
+
+.header h1 {
+    font-weight: 900; /* Montserrat Black */
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+    font-size: 28px;
+    text-shadow: 0 0 8px var(--primary-purple);
+}
+.header p {
+    font-size: 15px;
+    color: var(--text-medium);
+    margin-top: 5px;
+}
+
+.content-section {
+    display: none;
+    padding: 0; /* Padding géré par les cartes internes */
+}
+
+.content-section.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.content-section > h2 { /* Titre de section */
+    font-weight: 700;
+    color: var(--primary-purple);
+    border-bottom: 2px solid var(--primary-purple);
+    padding-bottom: 8px;
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 22px;
+    text-align: center;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(13, 13, 31, 0.85); /* var(--gradient-end) avec transparence */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    z-index: 1000;
+    border-top: 1px solid rgba(191, 64, 191, 0.2);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    color: var(--text-medium);
+    font-size: 11px;
+    font-weight: 700;
+    border: none;
+    background: none;
+    padding: 5px 8px;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-item .icon {
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+
+.nav-item:hover {
+    color: var(--text-light);
+}
+.nav-item.active {
+    color: var(--primary-purple);
+    transform: scale(1.1);
+}
+.nav-item.active .icon {
+    text-shadow: 0 0 10px var(--primary-purple);
+}
+
+
+/* --- Card Styling (Modernized) --- */
+.card { /* Classe générique pour toutes les cartes */
+    background-color: var(--card-bg-opaque);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-light);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-strong);
+}
+
+.card h3 { /* Titre dans une carte */
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--text-light);
+    font-weight: 700;
+    font-size: 18px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+.card p {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-medium);
+}
+
+.match-card .teams {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 700;
+}
+.match-card .team-name {
+    flex: 1;
+    text-align: center;
+}
+.match-card .vs {
+    color: var(--primary-purple);
+    font-size: 16px;
+    margin: 0 10px;
+}
+
+.match-card .odds-section {
+    background-color: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin: 15px 0;
+}
+.match-card .odds-section .bet-suggestion {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 5px;
+}
+.match-card .odds-value {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--primary-purple);
+    letter-spacing: 1px;
+}
+
+.match-card .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-medium);
+    margin-top: 15px;
+    text-align: center;
+}
+.match-card .details-grid > div > strong {
+    color: var(--text-light);
+    display: block;
+    margin-bottom: 3px;
+}
+
+
+.bet-button {
+    background: linear-gradient(to right, var(--primary-purple), var(--primary-purple-darker));
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-weight: 700;
+    text-transform: uppercase;
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 10px rgba(191, 64, 191, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.bet-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(191, 64, 191, 0.4);
+}
+.bet-button:disabled {
+    background: var(--text-dark);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+
+.info-box { /* Pour le solde sur l'accueil */
+    background-color: var(--card-bg-opaque);
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-light);
+}
+.info-box .value {
+    font-size: 36px;
+    font-weight: 900; /* Montserrat Black */
+    color: var(--success-color);
+    font-family: var(--font-main);
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px var(--success-color);
+}
+.info-box .value.negative {
+    color: var(--danger-color);
+    text-shadow: 0 0 10px var(--danger-color);
+}
+.info-box .label {
+    font-size: 14px;
+    color: var(--text-medium);
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.loading, .error-message { /* Renamed .error to .error-message */
+    text-align: center;
+    padding: 30px 15px;
+    font-style: italic;
+    color: var(--text-medium);
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    margin: 20px 0;
+}
+.error-message {
+    color: var(--danger-color);
+    font-weight: 700;
+}
+
+ul { list-style-type: none; padding: 0; }
+li { margin-bottom: 8px; }
+
+/* Bilan Section */
+.bilan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+.bilan-item { /* Utilise la classe .card maintenant */
+    text-align: center;
+}
+.bilan-item .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-purple);
+    font-family: var(--font-main);
+    margin-bottom: 5px;
+}
+.bilan-item .stat-value.positive { color: var(--success-color); }
+.bilan-item .stat-value.negative { color: var(--danger-color); }
+
+.bilan-item .stat-label {
+    font-size: 12px;
+    color: var(--text-medium);
+    text-transform: uppercase;
+}
+
+/* Tags */
+.tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 15px; /* Pill shape */
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 6px;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.tag.risque-Élevé, .tag.risque-eleve { background-color: var(--danger-color); } /* Handle case variations */
+.tag.risque-Moyen, .tag.risque-moyen { background-color: #FF8C00; } /* Dark Orange */
+.tag.risque-Faible, .tag.risque-faible { background-color: var(--success-color); }
+
+.tag.statut-gagné { background-color: var(--success-color); }
+.tag.statut-perdu { background-color: var(--danger-color); }
+.tag.statut-à.venir, .tag.statut-avenir { background-color: #2196F3; } /* Blue */
+
+
+/* Account Section */
+.account-item { /* Utilise la classe .card */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0; /* Vertical padding, horizontal handled by card */
+    border-bottom: 1px solid var(--border-color);
+}
+.account-item:last-child {
+    border-bottom: none;
+}
+.account-item strong {
+    color: var(--text-medium);
+    font-size: 14px;
+}
+.account-item .value { /* For balance, PNL etc. in account */
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-light);
+}
+.account-item .value.positive { color: var(--success-color); }
+.account-item .value.negative { color: var(--danger-color); }
+
+
+/* Section Specific Titles (if needed outside .content-section > h2) */
+.section-title { /* Alternative pour les titres de sous-sections */
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+
+/* Responsive */
+@media (max-width: 480px) {
+    .app-container {
+        padding: 15px;
+        padding-bottom: 80px;
+    }
+    .header img.logo {
+        max-width: 100px;
+    }
+    .header h1 {
+        font-size: 24px;
+    }
+    .header p {
+        font-size: 14px;
+    }
+    .content-section > h2 {
+        font-size: 20px;
+    }
+    .nav-item .icon {
+        font-size: 20px;
+    }
+    .nav-item {
+        font-size: 10px;
+    }
+    .card {
+        padding: 15px;
+    }
+    .card h3 {
+        font-size: 16px;
+    }
+    .bet-button {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+    .info-box .value {
+        font-size: 30px;
+    }
+    .match-card .teams {
+        font-size: 16px;
+    }
+}
